@@ -1,14 +1,17 @@
 # MSCA PF Templates Script
 
+## Features
+* write in LaTeX or Markdown and render in MS Word
+* compatible with marking tags
+* compatible with any year
+
 This script is designed to assist with the preparation of Marie Skłodowska-Curie Actions
 (MSCA) Postdoctoral Fellowship (PF) templates. It automates the process of converting
 files to RTF format, inserting them into an official template, and extracting them back
-to the original format. This allows you to use LaTeX of Markdown to write your proposal,
+to the original format. This allows you to use LaTeX or Markdown to write your proposal,
 with full support for BibTeX.
 
-You can use this script to convert these files into RTF format, insert them into the official MSCA PF template, and then extract them back into LaTeX format after receiving feedback from your advisor.
-
-For an example of rendered output, see the [this](output/output.pdf) file.
+For an example of rendered output, see [this](output/output.pdf) file.
 
 ## TL;DR
 
