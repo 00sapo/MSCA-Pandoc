@@ -14,7 +14,8 @@ For an example of rendered output, see the [this](output/output.pdf) file.
 
 1. Name your files as the section number (e.g., `1.1.file1.tex`).
 2. Run `python rtfcompile.py` to compile the files.
-3. Adjust some minor formatting (image/text/table alignment and footnotes)
+3. Adjust some minor formatting (image/text/table alignment and footnotes, see [Known
+   Issues](#known-issues))
 4. Send the RTF file to your advisor.
 5. Run `python rtfcompile.py --extract file_modified_by_supervisor.rtf` to extract the files back to LaTeX.
 
@@ -23,7 +24,7 @@ For an example of rendered output, see the [this](output/output.pdf) file.
 Clone the repository from GitHub or download the zip file and extract it:
 
 ```bash
-git clone https://github.com/username/repository.git
+git clone git@github.com:00sapo/MSCA-Pandoc.git
 ```
 
 ### Windows
@@ -149,7 +150,7 @@ introduced and the font size is slightly not always uniform.
 ### Extraction
 
 The extraction process -- i.e. from RTF to latex or markdown -- is not perfect. And it
-is recommended to manually copy and post from the extracteed files into the original
+is recommended to manually copy and paste from the extracted files into the original
 sources.
 
 # Credits
