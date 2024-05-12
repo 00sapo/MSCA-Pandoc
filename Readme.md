@@ -116,15 +116,33 @@ An example directory structure is shown below:
 
 ## Known Issues
 
-Image size is not supported because of Pandoc. I suggest changing the DPI of the image
-to match the size of the image that you want in the official template. A smaller DPI
-value corresponds to larger images.
-You can change the DPI of the image with ImageMagick (`apt install imagemagick`) or any
-other image editor. With ImageMagick:
+### Scaling of Images and Floats
 
-```bash
-mogrify -density 96 -units PixelsPerInch myimage.png
+Since the system uses fragments of LaTeX, Pandoc is unaware of page sizes. Consequently,
+scaling of images and floats won't work as expected. You should use absolute values,
+instead.
+
+Since the standard format is A4, which is 21 cm wide, and the borders are 2.54 cm wide
+(2024 template), the text width is 21 - 2 \* 2.54 = 15.92 cm. You can use this value in
+place of `\textwidth`.
+
+For example, to scale an image to 50% of the text width, use:
+
+```latex
+\includegraphics[width=7.96cm]{image.png}
 ```
+
+### Text Alignment
+
+Unfortunately, text alignment is not supported in Pandoc for RTF. This means you cannot
+center floats, nor text or math in the source code.
+You should manually adjust the alignment in the RTF document.
+
+### Extraction
+
+The extraction process -- i.e. from RTF to latex or markdown -- is not perfect. And it
+is recommended to manually copy and post from the extracteed files into the original
+sources.
 
 # Credits
 

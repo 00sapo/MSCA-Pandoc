@@ -34,14 +34,16 @@ def find_string(content, string):
     return None
 
 
-def convert(file_path, output_type, csl_path=None, resource_paths=None):
+def convert(file_path, output_type, csl_path=None, resource_paths=None, suppress_bibliography=False):
     script_dir = Path(__file__).resolve().parent
     if csl_path is None:
         csl_path = Path(script_dir) / 'anti-trafficking-review.csl'
-    command = ['pandoc', file_path, '--citeproc', f'--csl={csl_path}', f'--to={output_type}']
+    command = ['pandoc', file_path, '--citeproc', f'--csl={csl_path}', f'--to={output_type}', f'--metadata=suppress-bibliography:{suppress_bibliography}']
     if resource_paths is not None:
         resource_path = '.:' + resource_paths
         command.append(f'--resource-path={resource_path}')
+    command = [str(x) for x in command]
+    print("Running pandoc: " + " ".join(command))
     result = subprocess.run(command, stdout=subprocess.PIPE)
     return result.stdout.decode()
 
@@ -71,13 +73,17 @@ def main():
 
     if args.extract:
         file_path = args.extract[0]
+        regions_to_extract = extract_rtf_content(file_path)
         for file_name, rtf_content in regions_to_extract:
+            print(f'Extracting {file_name}')
             out_file = output_dir / file_name
-            with open(out_file, 'w') as file:
+            out_file_rtf = out_file.with_suffix('.rtf')
+            with open(out_file_rtf, 'w') as file:
                 file.write(rtf_content)
-            input_content = convert(out_file, config['extract_filetype'])
-            with open(os.path.join(out_file, file_name), 'w') as file:
+            input_content = convert(out_file_rtf, config['extract_filetype'])
+            with open(out_file, 'w') as file:
                 file.write(input_content)
+            out_file_rtf.unlink()
     else:
         with open(config['official_template'], 'r') as file:
             official_template = file.read()
@@ -86,10 +92,11 @@ def main():
         validate_files(input_files)
         sorted_files = sort_files(input_files)
         for file_path in sorted_files:
+            print(f'Converting {file_path.name}')
             occurrence = find_string(official_template, config['string'])
             if occurrence is None:
                 raise RuntimeError(f'Could not find string `{config["string"]}` in {config["official_template"]}')
-            rtf_content = convert(file_path, 'rtf', config.get('citation_style'), config.get('resource_paths'))
+            rtf_content = convert(file_path, 'rtf', config.get('citation_style'), config.get('resource_paths'), config['suppress_bibliography'])
             rtf_content = prepend_append_rtf(rtf_content, file_path.name)
             official_template = official_template[:occurrence[0]] + rtf_content + official_template[occurrence[1]:]
 

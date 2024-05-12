@@ -18,5 +18,10 @@ official_template = "./Tpl_Application Form (Part B) (HE MSCA PF).rtf"
 # the string to be replaced in the official template file
 string = "Insert here text for your proposal"
 
+# by default, Pandoc will add a bibliography to each RTF section. By default, this tool
+# will add citations as footnotes, so we can suppress the bibliography. If you use a different
+# citation style, you may want to set this to False
+suppress_bibliography = true
+
 # insert the citation style path if you want to use a different one
 # citation_style = "./path/to/citation/style.csl"
