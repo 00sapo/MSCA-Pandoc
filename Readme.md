@@ -8,12 +8,15 @@ with full support for BibTeX.
 
 You can use this script to convert these files into RTF format, insert them into the official MSCA PF template, and then extract them back into LaTeX format after receiving feedback from your advisor.
 
+For an example of rendered output, see the [this](output/output.pdf) file.
+
 ## TL;DR
 
 1. Name your files as the section number (e.g., `1.1.file1.tex`).
 2. Run `python rtfcompile.py` to compile the files.
-3. Send the RTF file to your advisor.
-4. Run `python rtfcompile.py --extract file_modified_by_supervisor.rtf` to extract the files back to LaTeX.
+3. Adjust some minor formatting (image/text/table alignment and footnotes)
+4. Send the RTF file to your advisor.
+5. Run `python rtfcompile.py --extract file_modified_by_supervisor.rtf` to extract the files back to LaTeX.
 
 ## Installation
 
@@ -137,6 +140,11 @@ For example, to scale an image to 50% of the text width, use:
 Unfortunately, text alignment is not supported in Pandoc for RTF. This means you cannot
 center floats, nor text or math in the source code.
 You should manually adjust the alignment in the RTF document.
+
+### Footnotes
+
+Footnotes are supported but you may want to reformat them because empty paragraphs are
+introduced and the font size is slightly not always uniform.
 
 ### Extraction
 
