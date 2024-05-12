@@ -8,6 +8,13 @@ with full support for BibTeX.
 
 You can use this script to convert these files into RTF format, insert them into the official MSCA PF template, and then extract them back into LaTeX format after receiving feedback from your advisor.
 
+## TL;DR
+
+1. Name your files as the section number (e.g., `1.1.file1.tex`).
+2. Run `python rtfcompile.py` to compile the files.
+3. Send the RTF file to your advisor.
+4. Run `python rtfcompile.py --extract file_modified_by_supervisor.rtf` to extract the files back to LaTeX.
+
 ## Installation
 
 Clone the repository from GitHub or download the zip file and extract it:
@@ -18,9 +25,9 @@ git clone https://github.com/username/repository.git
 
 ### Windows
 
-I reccommend using the Windows Subsystem for Linux (WSL) to run the script on Windows. You can install WSL by following the instructions [here](https://docs.microsoft.com/en-us/windows/wsl/install).
+I recommend using the Windows Subsystem for Linux (WSL) to run the script on Windows. You can install WSL by following the instructions [here](https://docs.microsoft.com/en-us/windows/wsl/install).
 
-Hoevever, you can also run the script on Windows natively (not tested):
+However, you can also run the script on Windows natively (not tested):
 
 1. Install Python 3.11 or higher. You can download it from the [official Python website](https://www.python.org/downloads/).
 2. Install Pandoc. You can download it from the [official Pandoc website](https://pandoc.org/installing.html).
@@ -51,7 +58,7 @@ file as a template and modify it as needed. Documentation for the configuration 
 To use the script, run it from the command line:
 
 ```bash
-python script.py
+python rtfcompile.py
 ```
 
 This will convert the files in the `input_dir` directory to RTF format, insert them into the official template, and save the result in the `output_dir` directory.
@@ -64,7 +71,7 @@ Citations will be saved as plain text footnotes when using the default citation 
 When you want to extract the files back to the original format, for instance after supervisor revision, use the `--extract` option:
 
 ```bash
-python script.py --extract file_modified_by_supervisor.rtf
+python rtfcompile.py --extract file_modified_by_supervisor.rtf
 ```
 
 The extracted files will be saved in the `output_dir` directory.
