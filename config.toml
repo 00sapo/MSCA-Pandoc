@@ -1,0 +1,22 @@
+# the input directory where the source files are located
+input_dir = "src"
+
+# the output directory where the converted files will be saved
+output_dir = "output"
+
+# the filetype that should be extracted from the RTF file when using the `--extract` option
+extract_filetype = "latex"
+
+# list pf directories where additional files are located (e.g. images, bib files)
+# separated by a : (colon), e.g. "images:resources"
+# The current directory is always included; comment out if not needed
+resource_paths = "resources"
+
+# the path to the official template file converted to RTF
+official_template = "./Tpl_Application Form (Part B) (HE MSCA PF).rtf"
+
+# the string to be replaced in the official template file
+string = "Insert here text for your proposal"
+
+# insert the citation style path if you want to use a different one
+# citation_style = "./path/to/citation/style.csl"
