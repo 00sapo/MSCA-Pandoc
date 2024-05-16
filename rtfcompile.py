@@ -1,3 +1,4 @@
+from os import close
 import tomllib
 import subprocess
 import re
@@ -92,7 +93,16 @@ def fix_footnotes(rtf_content, footnote_size):
     """Looks for `\\footnote` and removes the ending `\\par` and sets font size for the footnote (in half points)"""
     footnote_size = int(footnote_size * 2)
     # for each footnote
-    for match in FOOTNOTE_PATTERN.finditer(rtf_content):
+    # find next match
+    start_match_search = 0
+    while True:
+        match = FOOTNOTE_PATTERN.search(rtf_content, start_match_search)
+        if match is None:
+            break
+        print(
+            "rtf_content[match.start():match.end()]:",
+            rtf_content[match.start() : match.end()],
+        )
         # find the next `\\chftn` and insert a `\\fsxx` before it
         # this is for the footnote number
         start = match.start()
@@ -110,28 +120,22 @@ def fix_footnotes(rtf_content, footnote_size):
         end = rtf_content.find("\\pard", footnote_start + 1) + 5
         rtf_content = rtf_content[:end] + f"\\fs{footnote_size}" + rtf_content[end:]
 
-        # the idea here is to look for the last curly brace that closes the footnote
-        # since one is already opened at `footnote_start`, we can look for `{` and `}`
-        # and if they are mismatched it means the `}` closes the `footnote_start` brace,
-        # so it's the end of the footnote
-        open_brace_pos = rtf_content.find("{", footnote_start + 1)
-        close_brace_pos = rtf_content.find("}", footnote_start + 1)
-        footnote_end = -1
-        while open_brace_pos != -1 and close_brace_pos != -1:
-            if open_brace_pos < close_brace_pos:
-                open_brace_pos = rtf_content.find("{", close_brace_pos + 1)
-                close_brace_pos = rtf_content.find("}", close_brace_pos + 1)
-            else:
-                footnote_end = close_brace_pos
+        # loop char by char until we find the closing `}`
+        open_braces = 1
+        close_braces = 0
+        for i in range(end, len(rtf_content)):
+            if rtf_content[i] == "{":
+                open_braces += 1
+            elif rtf_content[i] == "}":
+                close_braces += 1
+            if open_braces == close_braces:
                 break
-        if footnote_end == -1:
-            print(
-                "Warning: Could not find closing brace for footnote; this may means the footnote was malformed."
-            )
-        else:
-            # now remove the first `\\par` before the closing brace
-            start = rtf_content.rfind("\\par", footnote_start, footnote_end)
-            rtf_content = rtf_content[:start] + rtf_content[close_brace_pos:]
+        # now we are at the closing `}`
+        # remove the `\\par` before it
+        start = rtf_content.rfind("\\par", start, i)
+        rtf_content = rtf_content[:start] + rtf_content[start + 4 :]
+        start_match_search = i - 4
+
     return rtf_content
 
 
