@@ -1,9 +1,10 @@
 # MSCA PF Templates Script
 
 ## Features
-* write in LaTeX or Markdown and render in MS Word
-* compatible with marking tags
-* compatible with any year
+
+- write in LaTeX or Markdown and render in MS Word
+- compatible with marking tags
+- compatible with any year
 
 This script is designed to assist with the preparation of Marie Skłodowska-Curie Actions
 (MSCA) Postdoctoral Fellowship (PF) templates. It automates the process of converting
@@ -144,11 +145,6 @@ For example, to scale an image to 50% of the text width, use:
 Unfortunately, text alignment is not supported in Pandoc for RTF. This means you cannot
 center floats, nor text or math in the source code.
 You should manually adjust the alignment in the RTF document.
-
-### Footnotes
-
-Footnotes are supported but you may want to reformat them because empty paragraphs are
-introduced and the font size is slightly not always uniform.
 
 ### Extraction
 
