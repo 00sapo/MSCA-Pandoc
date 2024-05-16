@@ -99,10 +99,6 @@ def fix_footnotes(rtf_content, footnote_size):
         match = FOOTNOTE_PATTERN.search(rtf_content, start_match_search)
         if match is None:
             break
-        print(
-            "rtf_content[match.start():match.end()]:",
-            rtf_content[match.start() : match.end()],
-        )
         # find the next `\\chftn` and insert a `\\fsxx` before it
         # this is for the footnote number
         start = match.start()
@@ -158,7 +154,6 @@ def main():
         file_path = args.extract[0]
         regions_to_extract = extract_rtf_content(file_path)
         for file_name, rtf_content in regions_to_extract:
-            print(f"Extracting {file_name}")
             out_file = output_dir / file_name
             out_file_rtf = out_file.with_suffix(".rtf")
             with open(out_file_rtf, "w") as file:
