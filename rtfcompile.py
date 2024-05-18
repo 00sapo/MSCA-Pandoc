@@ -183,9 +183,9 @@ def split_rtf_content(rtf_content, file_paths):
     split_content = rtf_content.split("\n")
     file_contents = []
     current_file = []
-    for line in split_content:
+    for i, line in enumerate(split_content):
         if "RTF2COMPILE - MARKER LINE - " in line:
-            if len(current_file) > 0:
+            if i > 0:
                 file_contents.append("\n".join(current_file))
             current_file = []
         else:
