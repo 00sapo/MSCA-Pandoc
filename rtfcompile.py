@@ -1,10 +1,12 @@
-from os import close
-import tomllib
-import subprocess
+import argparse
+import os
+import platform
 import re
 import shutil
-import argparse
+import subprocess
 from pathlib import Path
+
+import tomllib
 
 
 def read_config(file_path):
@@ -16,6 +18,37 @@ def read_config(file_path):
 def check_pandoc():
     if not shutil.which("pandoc"):
         raise Exception("Pandoc is not installed")
+
+
+def check_libreoffice():
+    """Check if LibreOffice is installed on the system"""
+    if platform.system() == "Windows":
+        # Paths where LibreOffice is typically installed on Windows
+        paths = [
+            "C:\\Program Files\\LibreOffice",
+            "C:\\Program Files (x86)\\LibreOffice",
+        ]
+
+        for path in paths:
+            if os.path.exists(path):
+                return [path]
+
+    elif platform.system() in ["Linux", "Darwin"]:
+        # Check if LibreOffice is installed as a system package or as a Flatpak
+        if shutil.which("libreoffice") or shutil.which("soffice"):
+            return ["libreoffice"]
+
+        # Check if LibreOffice is installed as a Flatpak
+        try:
+            result = subprocess.run(
+                ["flatpak", "list"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            )
+            if "org.libreoffice.LibreOffice" in result.stdout.decode("utf-8"):
+                return ["flatpak", "run", "org.libreoffice.LibreOffice"]
+        except FileNotFoundError:
+            pass
+
+    return None
 
 
 def validate_files(file_paths: Path):
@@ -134,6 +167,68 @@ def fix_footnotes(rtf_content, footnote_size):
     return rtf_content
 
 
+def extraction(args, config, output_dir) -> None:
+    file_path = args.extract[0]
+    regions_to_extract = extract_rtf_content(file_path)
+    for file_name, rtf_content in regions_to_extract:
+        out_file = output_dir / file_name
+        out_file_rtf = out_file.with_suffix(".rtf")
+        with open(out_file_rtf, "w") as file:
+            file.write(rtf_content)
+        input_content = convert(out_file_rtf, config["extract_filetype"])
+        with open(out_file, "w") as file:
+            file.write(input_content)
+        out_file_rtf.unlink()
+
+
+def compile(config, input_dir, official_template_path, output_dir):
+    with open(config["official_template"], "r") as file:
+        official_template = file.read()
+
+    input_files = list(input_dir.glob("*"))
+    validate_files(input_files)
+    sorted_files = sort_files(input_files)
+    for file_path in sorted_files:
+        print(f"Converting {file_path.name}")
+        occurrence = find_string(official_template, config["string"])
+        if occurrence is None:
+            raise RuntimeError(
+                f'Could not find string `{config["string"]}` in {config["official_template"]}'
+            )
+        rtf_content = convert(
+            file_path,
+            "rtf",
+            config.get("citation_style"),
+            config.get("resource_paths"),
+            config["suppress_bibliography"],
+            config.get("footnote_size"),
+        )
+        rtf_content = prepend_append_rtf(rtf_content, file_path.name)
+        official_template = (
+            official_template[: occurrence[0]]
+            + rtf_content
+            + official_template[occurrence[1] :]
+        )
+
+    output_rtf_path = output_dir / official_template_path.name
+    with open(output_rtf_path, "w") as file:
+        file.write(official_template)
+
+    libreoffice = check_libreoffice()
+    if libreoffice is not None:
+        # convert to pdf
+        subprocess.run(
+            libreoffice
+            + [
+                "--convert-to",
+                "pdf",
+                "--outdir",
+                output_dir,
+                output_rtf_path.with_suffix(".pdf"),
+            ]
+        )
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -150,48 +245,9 @@ def main():
     check_pandoc()
 
     if args.extract:
-        file_path = args.extract[0]
-        regions_to_extract = extract_rtf_content(file_path)
-        for file_name, rtf_content in regions_to_extract:
-            out_file = output_dir / file_name
-            out_file_rtf = out_file.with_suffix(".rtf")
-            with open(out_file_rtf, "w") as file:
-                file.write(rtf_content)
-            input_content = convert(out_file_rtf, config["extract_filetype"])
-            with open(out_file, "w") as file:
-                file.write(input_content)
-            out_file_rtf.unlink()
+        extraction(args, config, output_dir)
     else:
-        with open(config["official_template"], "r") as file:
-            official_template = file.read()
-
-        input_files = list(input_dir.glob("*"))
-        validate_files(input_files)
-        sorted_files = sort_files(input_files)
-        for file_path in sorted_files:
-            print(f"Converting {file_path.name}")
-            occurrence = find_string(official_template, config["string"])
-            if occurrence is None:
-                raise RuntimeError(
-                    f'Could not find string `{config["string"]}` in {config["official_template"]}'
-                )
-            rtf_content = convert(
-                file_path,
-                "rtf",
-                config.get("citation_style"),
-                config.get("resource_paths"),
-                config["suppress_bibliography"],
-                config.get("footnote_size"),
-            )
-            rtf_content = prepend_append_rtf(rtf_content, file_path.name)
-            official_template = (
-                official_template[: occurrence[0]]
-                + rtf_content
-                + official_template[occurrence[1] :]
-            )
-
-        with open(output_dir / official_template_path.name, "w") as file:
-            file.write(official_template)
+        compile(config, input_dir, official_template_path, output_dir)
 
 
 if __name__ == "__main__":
