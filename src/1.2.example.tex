@@ -3,11 +3,15 @@
 % borders in 2024 template are 2.54cm
 % So \textwidth is 21 - 2*2.54 = 15.92cm
 \def \textwidth {15.92cm}
+\def \threequartertextwidth {11.94cm}
 \def \halftextwidth {7.96cm}
+\def \onequartertextwidth {3.98cm}
+\newcommand {\cite}[1]{\footnote{\label{#1}\textcite{#1}}}
+\newcommand {\refcite}[1]{\footnote{See citation \ref{#1}}}
 
-Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium.
+Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque\cite{minsky2017perceptrons} laudantium.
 
-With a different Footnote\footnote{Another footnote}, bold text \textbf{emphasized text} and a citation\cite{einstein2013principle}. Let's add some math $y = mx + c$ and italics \textit{highlighted}. Note that you shouldn't use. And also itemize and lists:
+With a different Footnote~\footnote{Another footnote}, bold text \textbf{emphasized text} and a citation\cite{einstein2013principle}. Let's add some math $y = mx + c$ and italics \textit{highlighted}. And also itemize and lists:
 \begin{itemize}
 	\item Item A
 	\item Item B
@@ -16,28 +20,34 @@ With a different Footnote\footnote{Another footnote}, bold text \textbf{emphasiz
 	\item Item Alpha
 	\item Item Beta
 \end{enumerate}
-And some figures:
+
+You can use the provided commands \textit{textwidth}, \textit{threequartertextwidth}, \textit{halftextwidth}, \textit{onequartertextwidth} to scale images.
+Or you can use explicit size, knowing that \textit{textwidth} is 15.92cm.
+Some figures:
 \begin{figure}[H]
 	% centering doesn't work
 	\centering
 	\includegraphics[width=\halftextwidth]{../resources/sample-image.png}
-	\caption{A sample image}
+	\caption{\textbf{Figure \ref{fig:sample}.} \textit{A sample image}}
 	\label{fig:sample}
 \end{figure}
 
+\\
 And tables:
 \begin{table}[H]
 	\centering
+	\caption{\textbf{Table \ref{tab:sample}.} \textit{A sample table}}
 	\begin{tabular}{|c|c|}
 		\hline
 		C & D \\ \hline
 		3 & 4 \\ \hline
 	\end{tabular}
-	\caption{A sample table}
 	\label{tab:sample}
 \end{table}
 
-And you can reference them: a figure\ref{fig:sample}, a table\ref{tab:sample}.
+And you can reference them: Figure~\ref{fig:sample}, Table~\ref{tab:sample}.
+
+Note that if you need to repeat a citation, I recommend using \textit{refcite} command provided by this tool, as in \refcite{minsky2017perceptrons}.
 
 % bibliography can be added
 \bibliography{../resources/Bibliography}

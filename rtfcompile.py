@@ -47,9 +47,8 @@ def convert(
     suppress_bibliography=False,
     footnote_size=10,
 ):
-    script_dir = Path(__file__).resolve().parent
     if csl_path is None:
-        csl_path = Path(script_dir) / "anti-trafficking-review.csl"
+        raise ValueError("citation_style must be provided in the config")
     command = [
         "pandoc",
         file_path,
