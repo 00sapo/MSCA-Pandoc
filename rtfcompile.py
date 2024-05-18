@@ -20,37 +20,6 @@ def check_pandoc():
         raise Exception("Pandoc is not installed")
 
 
-def check_libreoffice():
-    """Check if LibreOffice is installed on the system"""
-    if platform.system() == "Windows":
-        # Paths where LibreOffice is typically installed on Windows
-        paths = [
-            "C:\\Program Files\\LibreOffice",
-            "C:\\Program Files (x86)\\LibreOffice",
-        ]
-
-        for path in paths:
-            if os.path.exists(path):
-                return [path]
-
-    elif platform.system() in ["Linux", "Darwin"]:
-        # Check if LibreOffice is installed as a system package or as a Flatpak
-        if shutil.which("libreoffice") or shutil.which("soffice"):
-            return ["libreoffice"]
-
-        # Check if LibreOffice is installed as a Flatpak
-        try:
-            result = subprocess.run(
-                ["flatpak", "list"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
-            )
-            if "org.libreoffice.LibreOffice" in result.stdout.decode("utf-8"):
-                return ["flatpak", "run", "org.libreoffice.LibreOffice"]
-        except FileNotFoundError:
-            pass
-
-    return None
-
-
 def validate_files(file_paths: Path):
     for file_path in file_paths:
         file_name = file_path.name
@@ -214,19 +183,15 @@ def compile(config, input_dir, official_template_path, output_dir):
     with open(output_rtf_path, "w") as file:
         file.write(official_template)
 
-    libreoffice = check_libreoffice()
-    if libreoffice is not None:
+    compile_command = config.get("pdf_compile", None)
+    if compile_command is not None:
         # convert to pdf
-        subprocess.run(
-            libreoffice
-            + [
-                "--convert-to",
-                "pdf",
-                "--outdir",
-                output_dir,
-                output_rtf_path.with_suffix(".pdf"),
-            ]
+        compile_command = compile_command.replace("%f", f'"{output_rtf_path}"')
+        compile_command = compile_command.replace(
+            "%o", f'"{output_rtf_path.with_suffix(".pdf")}"'
         )
+
+        subprocess.run(compile_command.split(" "), shell=True)
 
 
 def main():
