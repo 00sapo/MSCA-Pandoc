@@ -1,15 +1,10 @@
 % Images can be scaled only using absolute width or height
 % A4 paper width is 21cm
 % borders in 2024 template are 2.54cm
-% So \textwidth is 21 - 2*2.54 = 15.92cm
-\def \textwidth {15.92cm}
-\def \threequartertextwidth {11.94cm}
-\def \halftextwidth {7.96cm}
-\def \onequartertextwidth {3.98cm}
-\newcommand {\cite}[1]{\footnote{\label{#1}\textcite{#1}}}
-\newcommand {\refcite}[1]{\footnote{See citation \ref{#1}}}
+% So \textwidth is set to 21 - 2*2.54 = 15.92cm
+% You can change them in header.tex
 
-Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque\cite{minsky2017perceptrons} laudantium.
+Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque\refcite{minsky2017perceptrons} laudantium.
 
 With a different Footnote~\footnote{Another footnote}, bold text \textbf{emphasized text} and a citation\cite{einstein2013principle}. Let's add some math $y = mx + c$ and italics \textit{highlighted}. And also itemize and lists:
 \begin{itemize}
@@ -27,7 +22,7 @@ Some figures:
 \begin{figure}[H]
 	% centering doesn't work
 	\centering
-	\includegraphics[width=\halftextwidth]{../resources/sample-image.png}
+	\includegraphics[width=\onequartertextwidth]{../resources/sample-image.png}
 	\caption{\textbf{Figure \ref{fig:sample}.} \textit{A sample image}}
 	\label{fig:sample}
 \end{figure}
@@ -47,7 +42,7 @@ And tables:
 
 And you can reference them: Figure~\ref{fig:sample}, Table~\ref{tab:sample}.
 
-Note that if you need to repeat a citation, I recommend using \textit{refcite} command provided by this tool, as in \refcite{minsky2017perceptrons}.
+Note that if you need to repeat a citation, I recommend using \textit{refcite} command provided by this tool, as in \refcite{einstein2013principle}.
 
 % bibliography can be added
 \bibliography{../resources/Bibliography}

@@ -29,3 +29,9 @@ citation_style = "./chicago-fullnote-bibliography-with-ibid.csl"
 
 # Size for the footnotes in pt; if not set, the default size is 10pt
 footnote_size = 9
+
+# command to compile to PDF
+# %f is substituted with the path to the compiled RTF 
+# %o is substituted with the path to the compiled PDF
+# Leave empty to turn off compilation to PDF
+# pdf_compile = libreoffice --headless --convert-to pdf --outdir output %f"

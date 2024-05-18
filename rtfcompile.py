@@ -1,12 +1,14 @@
+import tempfile
 import argparse
-import os
-import platform
 import re
 import shutil
 import subprocess
 from pathlib import Path
 
 import tomllib
+
+with open("header.tex", "r") as f:
+    HEADER = f.read()
 
 
 def read_config(file_path):
@@ -51,23 +53,35 @@ def convert(
 ):
     if csl_path is None:
         raise ValueError("citation_style must be provided in the config")
-    command = [
-        "pandoc",
-        file_path,
-        "--citeproc",
-        f"--csl={csl_path}",
-        f"--to={output_type}",
-        f"--metadata=suppress-bibliography:{suppress_bibliography}",
-    ]
-    if resource_paths is not None:
-        resource_path = ".:" + resource_paths
-        command.append(f"--resource-path={resource_path}")
-    command = [str(x) for x in command]
-    print("Running pandoc: " + " ".join(command))
-    result = subprocess.run(command, stdout=subprocess.PIPE)
-    rtf_content = result.stdout.decode()
-    rtf_content = fix_footnotes(rtf_content, footnote_size)
-    return rtf_content
+    with open(file_path, "r") as file:
+        content = file.read()
+    if file_path.suffix == ".tex":
+        # add header.tex before of it
+        content = str(HEADER) + "\n" + str(content)
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=file_path.suffix) as file:
+        # copying to a temporary file so we can write a modified file
+        file.write(content.encode())
+        file.flush()
+        command = [
+            "pandoc",
+            file.name,
+            "--citeproc",
+            f"--csl={csl_path}",
+            f"--to={output_type}",
+            f"--metadata=suppress-bibliography:{suppress_bibliography}",
+        ]
+        if resource_paths is not None:
+            resource_path = ".:" + resource_paths
+            command.append(f"--resource-path={resource_path}")
+        command = [str(x) for x in command]
+        print("Running pandoc: " + " ".join(command))
+        result = subprocess.run(command, stdout=subprocess.PIPE)
+
+    converted_content = result.stdout.decode()
+    if file_path.suffix == ".tex":
+        converted_content = fix_footnotes(converted_content, footnote_size)
+    return converted_content
 
 
 def prepend_append_rtf(rtf_content, file_name):
@@ -150,6 +164,42 @@ def extraction(args, config, output_dir) -> None:
         out_file_rtf.unlink()
 
 
+def concat_tex_files(file_paths):
+    """Concatenate tex files together while inserting markers for each file that will persist through the RTF conversion"""
+    content = ""
+    for file_path in file_paths:
+        with open(file_path, "r") as file:
+            file_content = file.read()
+        content += "\n\nRTF2COMPILE - MARKER LINE - " + str(file_path.name) + "\n\n"
+        content += file_content
+    return content
+
+
+def split_rtf_content(rtf_content, file_paths):
+    """
+    Split the RTF content into the converted files by looking for markers and removing their full line
+    Returns a list of strings representing the content of each file in order of the file_paths provided
+    """
+    split_content = rtf_content.split("\n")
+    file_contents = []
+    current_file = []
+    for line in split_content:
+        if "RTF2COMPILE - MARKER LINE - " in line:
+            if len(current_file) > 0:
+                file_contents.append("\n".join(current_file))
+            current_file = []
+        else:
+            current_file.append(line)
+    if len(current_file) > 0:
+        file_contents.append("\n".join(current_file))
+
+    if len(file_contents) != len(file_paths):
+        print(
+            f"Warning: Number of files found in RTF content ({len(file_contents)}) does not match number of files provided ({len(file_paths)})"
+        )
+    return file_contents
+
+
 def compile(config, input_dir, official_template_path, output_dir):
     with open(config["official_template"], "r") as file:
         official_template = file.read()
@@ -157,22 +207,34 @@ def compile(config, input_dir, official_template_path, output_dir):
     input_files = list(input_dir.glob("*"))
     validate_files(input_files)
     sorted_files = sort_files(input_files)
-    for file_path in sorted_files:
-        print(f"Converting {file_path.name}")
-        occurrence = find_string(official_template, config["string"])
-        if occurrence is None:
-            raise RuntimeError(
-                f'Could not find string `{config["string"]}` in {config["official_template"]}'
-            )
+
+    # concatenating is needed to keep referencings numbers consistent, because pandoc
+    # will put text because other languages don't support labeling/referencing and use
+    # raw text
+    tex_content = concat_tex_files(sorted_files)
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".tex") as file:
+        file.write(tex_content.encode())
+        file.flush()
+        tex_path = Path(file.name)
+        print("Converting to RTF")
         rtf_content = convert(
-            file_path,
+            tex_path,
             "rtf",
             config.get("citation_style"),
             config.get("resource_paths"),
             config["suppress_bibliography"],
             config.get("footnote_size"),
         )
-        rtf_content = prepend_append_rtf(rtf_content, file_path.name)
+
+    rtf_contents = split_rtf_content(rtf_content, sorted_files)
+
+    for i, file_path in enumerate(sorted_files):
+        occurrence = find_string(official_template, config["string"])
+        if occurrence is None:
+            raise RuntimeError(
+                f'Could not find string `{config["string"]}` in {config["official_template"]}'
+            )
+        rtf_content = prepend_append_rtf(rtf_contents[i], file_path.name)
         official_template = (
             official_template[: occurrence[0]]
             + rtf_content
