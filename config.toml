@@ -13,7 +13,7 @@ extract_filetype = "latex"
 resource_paths = "resources"
 
 # the path to the official template file converted to RTF
-official_template = "./Tpl_Application Form (Part B) (HE MSCA PF).rtf"
+official_template = "./template.rtf"
 
 # the string to be replaced in the official template file
 string = "Insert here text for your proposal"
@@ -34,4 +34,4 @@ footnote_size = 9
 # %f is substituted with the path to the compiled RTF 
 # %o is substituted with the path to the compiled PDF
 # Leave empty to turn off compilation to PDF
-# pdf_compile = libreoffice --headless --convert-to pdf --outdir output %f"
+# pdf_compile = "libreoffice --headless --convert-to pdf --outdir output %f"
